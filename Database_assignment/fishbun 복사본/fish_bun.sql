@@ -1,82 +1,215 @@
-CREATE DATABASE IF NOT EXISTS fish_shaped_bun_shop;
+-- 문제 풀이
 
-USE fish_shaped_bun_shop;
 
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS raw_materials;
-DROP TABLE IF EXISTS stocks;
-DROP TABLE IF EXISTS daily_records;
-DROP TABLE IF EXISTS order_records;
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS sales_records;
-DROP TABLE IF EXISTS sales_items;
+use fish_shaped_bun_shop;
 
-CREATE TABLE users(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	first_name VARCHAR(50), -- 이름
-	last_name VARCHAR(20) NOT NULL, -- 성별
-	email VARCHAR(50) NOT NULL UNIQUE, -- 이메일
-	password VARCHAR(255) NOT NULL UNIQUE, -- 비밀번호
-	address VARCHAR(255), -- 주소
-	contact VARCHAR(50), -- 전화번호
-	gender BOOLEAN NOT NULL, -- 성별
-	is_active BOOLEAN NOT NULL DEFAULT TRUE, -- 활성화된 계정인지 확인하는 컬럼
-	is_staff BOOLEAN NOT NULL DEFAULT FALSE, -- 직원인지 확인하는 컬럼
-	is_orderable BOOLEAN NOT NULL DEFAULT FALSE -- 주문 권한이 있는지 확인하는 컬럼
+-- 문제 1번
+INSERT INTO 
+users(
+	first_name,
+    last_name,
+    email,
+    password,
+    address,
+    contact,
+    gender
+)
+VALUES(
+	"BANANA",
+    "MILK",
+    "banana123@banana.com",
+    "ekfjabsgjb1l4",
+    "oz-coding-school",
+    "010-1234-5678",
+    TRUE
 );
 
-CREATE TABLE raw_materials (
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	name VARCHAR(50) NOT NULL, -- 원재료 이름
-	price DECIMAL(10, 2) NOT NULL -- 원재료 가격
+-- 확인하기
+SELECT * FROM users WHERE first_name="BANANA";
+
+
+
+-- 문제 2번
+UPDATE users
+SET address="new-oz-coding-school"
+WHERE id=11;
+
+-- 확인하기
+SELECT * FROM users WHERE id=11;
+
+
+-- 문제 3번
+-- sales_records 데이터 생성
+INSERT INTO
+sales_records(
+	user_id
+)
+VALUE(
+	11
 );
 
-CREATE TABLE stocks(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	raw_material_id INT NOT NULL, -- 원재료 id
-	quantity INT NOT NULL, -- 수량
-	last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 마지막 업데이트 시간
-	FOREIGN KEY (raw_material_id) REFERENCES raw_materials(id)
+-- 확인하기
+SELECT * FROM sales_records;
+
+SELECT * FROM products;
+
+-- sales_items 데이터 생성
+INSERT INTO
+sales_items(
+	sales_record_id,
+    product_id,
+    quantity
+)
+VALUES(
+	3,
+    (SELECT id FROM products WHERE name="Red Bean Bun"),
+    3
 );
 
-CREATE TABLE daily_records(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	stock_id INT,-- stocks 테이블의 id
-	change_quantity INT, -- 변경된 수량
-	change_type ENUM('IN', 'OUT', 'RETURNED', 'DISCARDED'), -- 입고(IN) 출고(OUT) 반품(RETURNED) 폐기(DISCARDED)
-	change_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- 변경된 시간
-	FOREIGN KEY (stock_id) REFERENCES stocks(id)
+INSERT INTO
+sales_items(
+	sales_record_id,
+    product_id,
+    quantity
+)
+VALUES(
+	3,
+    (SELECT id FROM products WHERE name="Fish Bun"),
+    2
 );
 
-CREATE TABLE order_records(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	user_id INT, -- users 테이블의 id
-	change_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- 변경된 시간
-	raw_material_id INT, -- raw_material 테이블의 id
-	quantity INT NOT NULL, -- 수량
-	FOREIGN KEY (user_id) REFERENCES users(id),
-	FOREIGN KEY (raw_material_id) REFERENCES raw_materials(id)
+INSERT INTO
+sales_items(
+	sales_record_id,
+    product_id,
+    quantity
+)
+VALUES(
+	3,
+    (SELECT id FROM products WHERE name="Chocolate Bun"),
+    5
 );
 
-CREATE TABLE products(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	name VARCHAR(50) NOT NULL, -- 상품 이름
-	description TEXT, -- 상품 설명
-	price DECIMAL(7, 2) NOT NULL -- 상품 가격
+-- 확인하기
+SELECT * FROM sales_items;
+SELECT * FROM raw_materials;
+
+
+
+-- 문제 4번
+INSERT INTO
+order_records(
+	user_id,
+	raw_material_id,
+    quantity
+)
+VALUES(
+	3,
+    1,
+    5
 );
 
-CREATE TABLE sales_records(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	user_id INT, -- users 테이블의 id
-	created_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- 생성 시간
-	FOREIGN KEY (user_id) REFERENCES users(id)
+INSERT INTO
+order_records(
+	user_id,
+	raw_material_id,
+    quantity
+)
+VALUES(
+	3,
+    3,
+    5
 );
 
-CREATE TABLE sales_items(
-	id INT AUTO_INCREMENT PRIMARY KEY, -- 인덱싱
-	sales_record_id INT, -- sales_records의 id
-	product_id INT, -- products의 id
-	quantity INT NOT NULL, -- 수량
-	FOREIGN KEY (sales_record_id) REFERENCES sales_records(id),
-	FOREIGN KEY (product_id) REFERENCES products(id)
+INSERT INTO
+order_records(
+	user_id,
+	raw_material_id,
+    quantity
+)
+VALUES(
+	3,
+    7,
+    150
 );
+
+-- 확인하기
+SELECT * FROM order_records WHERE user_id=11;
+
+
+
+-- 문제 5번
+SELECT * FROM stocks;
+
+INSERT INTO
+daily_records(
+	stock_id,
+    change_quantity,
+    change_type
+)
+VALUES(
+	7,
+    (SELECT quantity FROM stocks WHERE id = 7) + 150,
+    "IN"
+);
+
+INSERT INTO
+daily_records(
+	stock_id,
+    change_quantity,
+    change_type
+)
+VALUES(
+	1,
+    (SELECT quantity FROM stocks WHERE id = 1) - 30,
+    "OUT"
+);
+
+INSERT INTO
+daily_records(
+	stock_id,
+    change_quantity,
+    change_type
+)
+VALUES(
+	5,
+    (SELECT quantity FROM stocks WHERE id = 5) + 1000,
+    "IN"
+);
+
+-- 확인하기
+SELECT * FROM daily_records;
+
+
+UPDATE stocks
+SET quantity= quantity + 150
+WHERE id = 7;
+
+-- 확인하기
+SELECT quantity FROM stocks WHERE id = 7; 
+
+
+
+-- 문제 6번
+SELECT 
+    sr.id AS sales_record_id,
+    sr.created_at,
+    u.first_name,
+    u.last_name,
+    si.product_id,
+    SUM(si.quantity) AS total_quantity,
+    p.price
+FROM 
+    sales_items AS si
+JOIN 
+    sales_records AS sr ON si.sales_record_id = sr.id
+JOIN 
+    users AS u ON sr.user_id = u.id
+JOIN 
+    products AS p ON si.product_id = p.id
+WHERE 
+    u.id = 11
+GROUP BY 
+    si.product_id, sr.id, sr.created_at, u.first_name, u.last_name, p.price
+ORDER BY 
+    p.price DESC;
